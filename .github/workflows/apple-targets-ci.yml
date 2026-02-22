@@ -1,0 +1,48 @@
+name: Apple Targets CI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "FitApp-macOS/**"
+      - "FitApp-watchOS/**"
+      - ".github/workflows/apple-targets-ci.yml"
+  pull_request:
+    paths:
+      - "FitApp-macOS/**"
+      - "FitApp-watchOS/**"
+      - ".github/workflows/apple-targets-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Xcode Version
+        run: xcodebuild -version
+
+      - name: Build macOS target
+        run: |
+          xcodebuild \
+            -project FitApp-macOS/FitApp_macOS.xcodeproj \
+            -scheme FitApp-macOS \
+            -configuration Debug \
+            -destination 'generic/platform=macOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Build watchOS target
+        run: |
+          xcodebuild \
+            -project FitApp-macOS/FitApp_macOS.xcodeproj \
+            -scheme FitApp-watchOS \
+            -configuration Debug \
+            -destination 'generic/platform=watchOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
