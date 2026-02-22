@@ -102,6 +102,20 @@ GitHub Actions workflow:
 
 It runs install, typecheck, tests, and build for `mcp-server` on push/PR.
 
+## Reclaim Local Storage
+
+After wiring/building in Xcode locally, reclaim space with:
+
+```bash
+./scripts/cleanup_xcode_artifacts.sh
+```
+
+Optional full simulator cleanup:
+
+```bash
+./scripts/cleanup_xcode_artifacts.sh --full-sim
+```
+
 ## License
 
 MIT (`LICENSE`)
