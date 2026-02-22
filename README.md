@@ -7,7 +7,7 @@ AI-powered fitness coaching app for macOS 14+ and watchOS 10+, backed by a local
 - `mcp-server`: Implemented with all required endpoints, schema validation, provider switching, tests, and CI.
 - `FitApp-macOS`: SwiftUI + SwiftData scaffold implemented for onboarding, dashboard, generator, insights, history, settings, offline fallback, and service layer.
 - `FitApp-watchOS`: SwiftUI companion scaffold implemented for active workout flow, quick stats, local cache, and WatchConnectivity sync.
-- `Xcode project`: source tree is ready; final target wiring/signing is done in Xcode on macOS.
+- `Xcode project`: wired targets are committed; final signing/capability setup is done in Xcode on macOS.
 
 ## Screenshots
 
@@ -87,7 +87,7 @@ The server exposes:
 ## App Setup (Xcode)
 
 1. Open `FitApp-macOS/FitApp_macOS.xcodeproj` in Xcode.
-2. Add the watch target (`FitApp-watchOS`) if not already mapped in your local project settings.
+2. Confirm bundle identifiers, signing team, and deployment settings for both app targets.
 3. Enable capabilities:
    - HealthKit (macOS + watchOS)
    - Watch Connectivity
