@@ -74,9 +74,20 @@ struct PlanGeneratorView: View {
                                     .font(.headline)
 
                                 ForEach(Array(day.exercises.enumerated()), id: \.element.id) { exerciseIndex, exercise in
-                                    HStack(alignment: .top) {
-                                        Text("• \(exercise.name) — \(exercise.sets)x\(exercise.reps)")
+                                    HStack(alignment: .top, spacing: 10) {
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(exercise.name)
+                                                .font(.subheadline.bold())
+                                            Text("\(exercise.sets) sets · \(exercise.reps)")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            Text("Rest \(exercise.restSeconds)s · \(exercise.difficulty)")
+                                                .font(.caption2)
+                                                .foregroundStyle(.secondary)
+                                        }
+
                                         Spacer()
+
                                         Button("Swap") {
                                             swapExercise(dayIndex: dayIndex, exerciseIndex: exerciseIndex)
                                         }

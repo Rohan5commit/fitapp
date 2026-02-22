@@ -1,6 +1,15 @@
 import SwiftData
 import SwiftUI
 
+private struct WeeklyPlanSlot: Identifiable {
+    let dayOfWeek: String
+    let focus: String
+    let exercises: [Exercise]
+    let isToday: Bool
+
+    var id: String { dayOfWeek }
+}
+
 struct DashboardView: View {
     let profile: UserProfile
 
@@ -47,6 +56,35 @@ struct DashboardView: View {
 
     private var nextSessionLabel: String {
         nextSession(from: currentPlan)
+    }
+
+    private var todayWeekdayIndex: Int {
+        let weekday = Calendar.current.component(.weekday, from: .now)
+        return (weekday + 5) % 7
+    }
+
+    private var weeklyPlanSlots: [WeeklyPlanSlot] {
+        let mappedDays: [String: WorkoutDay] = (currentPlan?.days ?? []).reduce(into: [:]) { partialResult, day in
+            partialResult[day.dayOfWeek.lowercased()] = day
+        }
+
+        return weekdayOrder.enumerated().map { index, dayName in
+            if let planDay = mappedDays[dayName.lowercased()] {
+                return WeeklyPlanSlot(
+                    dayOfWeek: dayName,
+                    focus: planDay.focus,
+                    exercises: planDay.exercises,
+                    isToday: index == todayWeekdayIndex
+                )
+            }
+
+            return WeeklyPlanSlot(
+                dayOfWeek: dayName,
+                focus: "Rest Day",
+                exercises: [],
+                isToday: index == todayWeekdayIndex
+            )
+        }
     }
 
     private var volumeTrendPoints: [TrendPoint] {
@@ -140,17 +178,56 @@ struct DashboardView: View {
                         Text("Current Week Plan")
                             .font(.title2.bold())
 
-                        ForEach(currentPlan.days) { day in
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("\(day.dayOfWeek) · \(day.focus)")
-                                    .font(.headline)
-                                ForEach(day.exercises) { exercise in
-                                    WorkoutCardView(exercise: exercise)
+                        Text(currentPlan.summary)
+                            .foregroundStyle(.secondary)
+
+                        LazyVGrid(
+                            columns: [GridItem(.adaptive(minimum: 220), spacing: 12)],
+                            spacing: 12
+                        ) {
+                            ForEach(weeklyPlanSlots) { slot in
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        Text(slot.dayOfWeek)
+                                            .font(.headline)
+                                        Spacer()
+                                        if slot.isToday {
+                                            Text("Today")
+                                                .font(.caption.bold())
+                                                .foregroundStyle(.blue)
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 3)
+                                                .background(Color.blue.opacity(0.12))
+                                                .clipShape(Capsule())
+                                        }
+                                    }
+
+                                    Text(slot.focus)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+
+                                    if slot.exercises.isEmpty {
+                                        Text("Recovery / rest")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    } else {
+                                        ForEach(slot.exercises.prefix(2)) { exercise in
+                                            Text("• \(exercise.name)")
+                                                .font(.caption)
+                                        }
+
+                                        if slot.exercises.count > 2 {
+                                            Text("+\(slot.exercises.count - 2) more")
+                                                .font(.caption2)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(12)
+                                .background(Color.gray.opacity(slot.isToday ? 0.14 : 0.08))
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             }
-                            .padding(12)
-                            .background(Color.gray.opacity(0.08))
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
                     }
                 }

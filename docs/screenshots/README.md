@@ -1,6 +1,8 @@
 # Screenshot Placeholders
 
-Add screenshots with these filenames so README links render:
+README currently points to these placeholder files:
 
-- `macos-dashboard.png`
-- `watch-active-workout.png`
+- `macos-dashboard.svg`
+- `watch-active-workout.svg`
+
+You can replace them with real images (PNG or SVG) captured from the running app.

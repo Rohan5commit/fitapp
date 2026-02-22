@@ -11,10 +11,10 @@ AI-powered fitness coaching app for macOS 14+ and watchOS 10+, backed by a local
 
 ## Screenshots
 
-![macOS Dashboard](docs/screenshots/macos-dashboard.png)
-![watchOS Active Workout](docs/screenshots/watch-active-workout.png)
+![macOS Dashboard](docs/screenshots/macos-dashboard.svg)
+![watchOS Active Workout](docs/screenshots/watch-active-workout.svg)
 
-Screenshot placeholders are included; add real captures under `docs/screenshots/`.
+Placeholder images are committed; replace them with real captures under `docs/screenshots/` when available.
 
 ## Architecture and API
 
@@ -49,16 +49,23 @@ fitapp/
 
 ## MCP Server Setup
 
-1. Install Node 20+.
-2. Copy env template.
+1. Clone repo:
+
+   ```bash
+   git clone https://github.com/Rohan5commit/fitapp.git
+   cd fitapp
+   ```
+
+2. Install Node 20+.
+3. Copy env template.
 
    ```bash
    cd mcp-server
    cp .env.example .env
    ```
 
-3. Configure provider + API key in `.env`.
-4. Install dependencies and run:
+4. Configure provider + API key in `.env`.
+5. Install dependencies and run:
 
    ```bash
    npm install
@@ -96,11 +103,13 @@ Optional request headers (`x-fitmind-provider`, `x-fitmind-openai-key`, `x-fitmi
 
 ## CI
 
-GitHub Actions workflow:
+GitHub Actions workflows:
 
 - `.github/workflows/mcp-server-ci.yml`
+- `.github/workflows/apple-targets-ci.yml`
 
-It runs install, typecheck, tests, and build for `mcp-server` on push/PR.
+- `mcp-server-ci.yml` runs install, typecheck, tests, and build for `mcp-server`.
+- `apple-targets-ci.yml` builds macOS and watchOS app targets with `xcodebuild` on GitHub-hosted macOS runners.
 
 ## Reclaim Local Storage
 

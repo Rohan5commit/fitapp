@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 720 720" role="img" aria-labelledby="title desc">
+  <title id="title">FitMind watchOS Active Workout Placeholder</title>
+  <desc id="desc">Placeholder image for the FitMind watchOS active workout screenshot.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="0%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="720" fill="url(#bg)"/>
+  <rect x="180" y="70" width="360" height="580" rx="70" fill="#0f172a" stroke="#334155" stroke-width="4"/>
+  <rect x="220" y="130" width="280" height="460" rx="40" fill="#020617"/>
+  <text x="360" y="190" fill="#e2e8f0" font-size="24" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Active Workout</text>
+  <text x="360" y="245" fill="#93c5fd" font-size="20" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Goblet Squat</text>
+  <text x="360" y="285" fill="#cbd5e1" font-size="16" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Set 2 / 4</text>
+  <rect x="250" y="330" width="220" height="70" rx="18" fill="#1d4ed8"/>
+  <text x="360" y="373" fill="#eff6ff" font-size="22" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Mark Set Done</text>
+  <text x="360" y="450" fill="#a7f3d0" font-size="18" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Heart Rate: 142 bpm</text>
+  <text x="360" y="500" fill="#fde68a" font-size="18" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Rest: 00:45</text>
+  <text x="360" y="690" fill="#94a3b8" font-size="16" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Replace with real watch screenshot</text>
+</svg>
