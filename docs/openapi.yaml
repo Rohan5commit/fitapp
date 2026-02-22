@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: FitMind MCP Server API
+  version: 0.2.0
+  description: Local middleware endpoints for AI trend analysis and workout planning.
+servers:
+  - url: http://127.0.0.1:8787
+    description: Local default server
+paths:
+  /health:
+    get:
+      summary: Health status
+      responses:
+        '200':
+          description: Service status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  provider:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+                required: [ok, provider, timestamp]
+  /analyze-trends:
+    post:
+      summary: Analyze workout trends
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeTrendsRequest'
+      responses:
+        '200':
+          description: Trend analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzeTrendsResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Provider or processing error
+  /generate-plan:
+    post:
+      summary: Generate weekly workout plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeneratePlanRequest'
+      responses:
+        '200':
+          description: Weekly plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratePlanResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Provider or processing error
+  /recommend-adjustments:
+    post:
+      summary: Recommend plan adjustments based on recent performance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendAdjustmentsRequest'
+      responses:
+        '200':
+          description: Plan adjustments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendAdjustmentsResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Provider or processing error
+components:
+  schemas:
+    AnalyzeTrendsRequest:
+      type: object
+      properties:
+        workoutHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              exercisesCompleted:
+                type: integer
+              totalVolume:
+                type: number
+              caloriesBurned:
+                type: number
+              avgHeartRate:
+                type: number
+              perceivedEffort:
+                type: number
+              notes:
+                type: string
+            required: [date, exercisesCompleted]
+        goals:
+          type: object
+          properties:
+            primaryGoal:
+              type: string
+            daysPerWeek:
+              type: integer
+            targetMetric:
+              type: string
+            notes:
+              type: string
+          required: [primaryGoal, daysPerWeek]
+      required: [workoutHistory, goals]
+    AnalyzeTrendsResponse:
+      type: object
+      properties:
+        summary:
+          type: string
+        wins:
+          type: array
+          items:
+            type: string
+        risks:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+        overtrainingRisk:
+          type: string
+          enum: [low, moderate, high]
+        plateauRisk:
+          type: string
+          enum: [low, moderate, high]
+      required: [summary, wins, risks, recommendations, overtrainingRisk, plateauRisk]
+    GeneratePlanRequest:
+      type: object
+      properties:
+        userProfile:
+          type: object
+          properties:
+            name:
+              type: string
+            age:
+              type: integer
+            fitnessGoal:
+              type: string
+            fitnessLevel:
+              type: string
+          required: [name, age, fitnessGoal, fitnessLevel]
+        preferences:
+          type: object
+          properties:
+            preferredWorkouts:
+              type: array
+              items:
+                type: string
+            equipment:
+              type: array
+              items:
+                type: string
+            daysPerWeek:
+              type: integer
+            sessionLengthMinutes:
+              type: integer
+            limitations:
+              type: array
+              items:
+                type: string
+          required: [preferredWorkouts, equipment, daysPerWeek]
+      required: [userProfile, preferences]
+    PlanExercise:
+      type: object
+      properties:
+        name:
+          type: string
+        sets:
+          type: integer
+        reps:
+          type: string
+        duration:
+          type: integer
+          nullable: true
+        restSeconds:
+          type: integer
+        muscleGroup:
+          type: string
+        difficulty:
+          type: string
+        notes:
+          type: string
+      required: [name, sets, reps, restSeconds, muscleGroup, difficulty]
+    PlanDay:
+      type: object
+      properties:
+        dayOfWeek:
+          type: string
+        focus:
+          type: string
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanExercise'
+      required: [dayOfWeek, focus, exercises]
+    GeneratePlanResponse:
+      type: object
+      properties:
+        weekStartDate:
+          type: string
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanDay'
+        rationale:
+          type: string
+        recoveryTips:
+          type: array
+          items:
+            type: string
+      required: [weekStartDate, days, rationale, recoveryTips]
+    RecommendAdjustmentsRequest:
+      type: object
+      properties:
+        recentPerformance:
+          type: object
+          properties:
+            adherenceRate:
+              type: number
+            averageEffort:
+              type: number
+            sorenessLevel:
+              type: number
+            fatigueLevel:
+              type: number
+            notes:
+              type: string
+          required: [adherenceRate, averageEffort, sorenessLevel, fatigueLevel]
+        existingPlan:
+          $ref: '#/components/schemas/GeneratePlanResponse'
+      required: [recentPerformance, existingPlan]
+    RecommendAdjustmentsResponse:
+      type: object
+      properties:
+        adjustments:
+          type: array
+          items:
+            type: object
+            properties:
+              dayOfWeek:
+                type: string
+              action:
+                type: string
+              reason:
+                type: string
+            required: [dayOfWeek, action, reason]
+        deloadSuggested:
+          type: boolean
+        deloadReason:
+          type: string
+        nextCheckIn:
+          type: string
+      required: [adjustments, deloadSuggested, deloadReason, nextCheckIn]

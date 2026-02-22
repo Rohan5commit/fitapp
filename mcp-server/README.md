@@ -33,6 +33,7 @@ npm test
 npm run build
 ```
 
-## API Examples
+## API Contract
 
-See `docs/api.md` for sample request/response payloads.
+- OpenAPI schema: `../docs/openapi.yaml`
+- Example payloads: `../docs/api.md`

@@ -5,7 +5,7 @@ AI-powered fitness coaching app for macOS 14+ and watchOS 10+, backed by a local
 ## Project Status
 
 - `mcp-server`: Implemented with all required endpoints, schema validation, provider switching, tests, and CI.
-- `FitApp-macOS`: SwiftUI + SwiftData scaffold implemented for onboarding, dashboard, generator, insights, history, settings, and service layer.
+- `FitApp-macOS`: SwiftUI + SwiftData scaffold implemented for onboarding, dashboard, generator, insights, history, settings, offline fallback, and service layer.
 - `FitApp-watchOS`: SwiftUI companion scaffold implemented for active workout flow, quick stats, local cache, and WatchConnectivity sync.
 - `Xcode project`: source tree is ready; final target wiring/signing is done in Xcode on macOS.
 
@@ -16,10 +16,11 @@ AI-powered fitness coaching app for macOS 14+ and watchOS 10+, backed by a local
 
 Screenshot placeholders are included; add real captures under `docs/screenshots/`.
 
-## Architecture
+## Architecture and API
 
 - High-level architecture: `docs/architecture.md`
 - API payload examples: `docs/api.md`
+- OpenAPI contract: `docs/openapi.yaml`
 
 ## Repo Layout
 

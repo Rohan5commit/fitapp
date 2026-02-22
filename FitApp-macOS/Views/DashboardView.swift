@@ -11,6 +11,10 @@ struct DashboardView: View {
     @StateObject private var healthKitService = HealthKitService()
     @State private var caloriesToday: Double = 0
 
+    private let weekdayOrder = [
+        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+    ]
+
     private var currentPlan: WorkoutPlan? {
         plans.first
     }
@@ -36,6 +40,10 @@ struct DashboardView: View {
             }
         }
         return streak
+    }
+
+    private var nextSessionLabel: String {
+        nextSession(from: currentPlan)
     }
 
     var body: some View {
@@ -102,6 +110,57 @@ struct DashboardView: View {
             } catch {
                 caloriesToday = 0
             }
+            syncQuickStats()
         }
+        .onChange(of: caloriesToday) { _ in
+            syncQuickStats()
+        }
+        .onChange(of: logs.count) { _ in
+            syncQuickStats()
+        }
+        .onChange(of: plans.count) { _ in
+            syncQuickStats()
+        }
+    }
+
+    private func syncQuickStats() {
+        WatchConnectivityService.shared.sendQuickStats(
+            caloriesToday: caloriesToday,
+            streak: streakDays,
+            nextSession: nextSessionLabel
+        )
+    }
+
+    private func nextSession(from plan: WorkoutPlan?) -> String {
+        guard let plan, !plan.days.isEmpty else {
+            return "No workout scheduled"
+        }
+
+        let orderedDays = plan.days
+            .compactMap { day -> (index: Int, WorkoutDay)? in
+                guard let index = weekdayIndex(for: day.dayOfWeek) else {
+                    return nil
+                }
+                return (index, day)
+            }
+            .sorted { $0.index < $1.index }
+
+        guard !orderedDays.isEmpty else {
+            return "No workout scheduled"
+        }
+
+        let weekday = Calendar.current.component(.weekday, from: .now)
+        let todayIndex = (weekday + 5) % 7
+
+        let next = orderedDays.first { $0.index >= todayIndex } ?? orderedDays.first
+        guard let next else {
+            return "No workout scheduled"
+        }
+
+        return "\(next.1.dayOfWeek) · \(next.1.focus)"
+    }
+
+    private func weekdayIndex(for dayName: String) -> Int? {
+        weekdayOrder.firstIndex { $0.caseInsensitiveCompare(dayName) == .orderedSame }
     }
 }

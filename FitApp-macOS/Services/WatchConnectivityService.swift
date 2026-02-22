@@ -1,6 +1,14 @@
 import Foundation
 import WatchConnectivity
 
+struct SetCompletionEvent {
+    let exerciseName: String
+    let setNumber: Int
+    let reps: Int
+    let elapsedSeconds: Int
+    let timestamp: Date
+}
+
 @MainActor
 final class WatchConnectivityService: NSObject, ObservableObject {
     static let shared = WatchConnectivityService()
@@ -8,6 +16,7 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     @Published private(set) var isReachable = false
     @Published private(set) var lastSyncDate: Date?
     @Published private(set) var lastReceivedPayload: [String: Any] = [:]
+    @Published private(set) var latestSetCompletion: SetCompletionEvent?
 
     private let session: WCSession? = WCSession.isSupported() ? WCSession.default : nil
 
@@ -50,11 +59,74 @@ final class WatchConnectivityService: NSObject, ObservableObject {
             WatchSyncPayloadKey.exercises: exercisePayloads
         ]
 
+        send(payload)
+    }
+
+    func sendQuickStats(caloriesToday: Double, streak: Int, nextSession: String) {
+        let payload: [String: Any] = [
+            WatchSyncPayloadKey.type: WatchSyncMessageType.quickStats,
+            WatchSyncPayloadKey.caloriesToday: caloriesToday,
+            WatchSyncPayloadKey.streak: streak,
+            WatchSyncPayloadKey.nextSession: nextSession
+        ]
+
+        send(payload)
+    }
+
+    private func send(_ payload: [String: Any]) {
+        guard let session else { return }
+
         if session.isReachable {
             session.sendMessage(payload, replyHandler: nil) { _ in }
         } else {
             try? session.updateApplicationContext(payload)
         }
+    }
+
+    private func handleIncomingPayload(_ payload: [String: Any]) {
+        lastReceivedPayload = payload
+        lastSyncDate = Date()
+
+        guard let type = payload[WatchSyncPayloadKey.type] as? String else {
+            return
+        }
+
+        guard type == WatchSyncMessageType.setCompleted else {
+            return
+        }
+
+        guard
+            let exerciseName = payload[WatchSyncPayloadKey.exerciseName] as? String,
+            let setNumber = intValue(payload[WatchSyncPayloadKey.setNumber]),
+            let reps = intValue(payload[WatchSyncPayloadKey.reps]),
+            let elapsedSeconds = intValue(payload[WatchSyncPayloadKey.elapsedSeconds])
+        else {
+            return
+        }
+
+        let timestampValue = (payload[WatchSyncPayloadKey.timestamp] as? TimeInterval) ?? Date().timeIntervalSince1970
+        let timestamp = Date(timeIntervalSince1970: timestampValue)
+
+        latestSetCompletion = SetCompletionEvent(
+            exerciseName: exerciseName,
+            setNumber: setNumber,
+            reps: reps,
+            elapsedSeconds: elapsedSeconds,
+            timestamp: timestamp
+        )
+    }
+
+    private func intValue(_ value: Any?) -> Int? {
+        if let intValue = value as? Int {
+            return intValue
+        }
+        if let number = value as? NSNumber {
+            return number.intValue
+        }
+        if let doubleValue = value as? Double {
+            return Int(doubleValue)
+        }
+        return nil
     }
 }
 
@@ -72,16 +144,14 @@ extension WatchConnectivityService: WCSessionDelegate {
 
     nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
         Task { @MainActor in
-            self.lastReceivedPayload = message
-            self.lastSyncDate = Date()
+            self.handleIncomingPayload(message)
             self.isReachable = session.isReachable
         }
     }
 
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
         Task { @MainActor in
-            self.lastReceivedPayload = applicationContext
-            self.lastSyncDate = Date()
+            self.handleIncomingPayload(applicationContext)
             self.isReachable = session.isReachable
         }
     }

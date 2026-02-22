@@ -2,6 +2,20 @@
 
 Base URL: `http://127.0.0.1:8787`
 
+Formal OpenAPI contract: `docs/openapi.yaml`
+
+## `GET /health`
+
+Example response:
+
+```json
+{
+  "ok": true,
+  "provider": "mock",
+  "timestamp": "2026-02-22T00:00:00.000Z"
+}
+```
+
 ## `POST /analyze-trends`
 
 Request:
