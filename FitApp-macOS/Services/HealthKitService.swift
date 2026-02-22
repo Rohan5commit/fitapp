@@ -112,7 +112,7 @@ final class HealthKitService: ObservableObject {
             metadata: metadata
         )
 
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             healthStore.save(workout) { success, error in
                 if let error {
                     continuation.resume(throwing: error)
