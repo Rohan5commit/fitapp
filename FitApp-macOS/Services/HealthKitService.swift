@@ -20,7 +20,7 @@ final class HealthKitService: ObservableObject {
         ]
         .compactMap { $0 }
 
-        try await withCheckedThrowingContinuation { continuation in
+        let granted: Bool = try await withCheckedThrowingContinuation { continuation in
             healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
                 if let error {
                     continuation.resume(throwing: error)
@@ -30,7 +30,7 @@ final class HealthKitService: ObservableObject {
             }
         }
 
-        authorizationGranted = true
+        authorizationGranted = granted
     }
 
     func fetchTodayActiveEnergyBurned() async throws -> Double {

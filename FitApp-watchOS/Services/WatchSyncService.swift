@@ -34,12 +34,12 @@ final class WatchSyncService: NSObject, ObservableObject {
         guard let session else { return }
 
         let payload: [String: Any] = [
-            "type": "setCompleted",
-            "exerciseName": exerciseName,
-            "setNumber": setNumber,
-            "reps": reps,
-            "elapsedSeconds": elapsedSeconds,
-            "timestamp": Date().timeIntervalSince1970
+            WatchSyncPayloadKey.type: WatchSyncMessageType.setCompleted,
+            WatchSyncPayloadKey.exerciseName: exerciseName,
+            WatchSyncPayloadKey.setNumber: setNumber,
+            WatchSyncPayloadKey.reps: reps,
+            WatchSyncPayloadKey.elapsedSeconds: elapsedSeconds,
+            WatchSyncPayloadKey.timestamp: Date().timeIntervalSince1970
         ]
 
         if session.isReachable {
@@ -50,36 +50,49 @@ final class WatchSyncService: NSObject, ObservableObject {
     }
 
     private func consumePayload(_ payload: [String: Any]) {
-        if let type = payload["type"] as? String, type == "todayPlan", let workout = parseWorkout(from: payload) {
+        guard let type = payload[WatchSyncPayloadKey.type] as? String else {
+            return
+        }
+
+        if type == WatchSyncMessageType.todayPlan,
+           let workout = parseWorkout(from: payload) {
             todayWorkout = workout
             cache.save(workout)
             return
         }
 
-        if let type = payload["type"] as? String, type == "quickStats" {
-            if let calories = payload["caloriesToday"] as? Double { caloriesToday = calories }
-            if let streak = payload["streak"] as? Int { self.streak = streak }
-            if let next = payload["nextSession"] as? String { nextSession = next }
+        if type == WatchSyncMessageType.quickStats {
+            if let calories = doubleValue(payload[WatchSyncPayloadKey.caloriesToday]) {
+                caloriesToday = calories
+            }
+
+            if let streakValue = intValue(payload[WatchSyncPayloadKey.streak]) {
+                streak = streakValue
+            }
+
+            if let next = payload[WatchSyncPayloadKey.nextSession] as? String {
+                nextSession = next
+            }
         }
     }
 
     private func parseWorkout(from payload: [String: Any]) -> WatchWorkoutDay? {
         guard
-            let day = payload["dayOfWeek"] as? String,
-            let focus = payload["focus"] as? String,
-            let exercisesRaw = payload["exercises"] as? [[String: Any]]
+            let day = payload[WatchSyncPayloadKey.dayOfWeek] as? String,
+            let focus = payload[WatchSyncPayloadKey.focus] as? String,
+            let exercisesRaw = payload[WatchSyncPayloadKey.exercises] as? [[String: Any]]
         else {
             return nil
         }
 
         let exercises: [WatchExercise] = exercisesRaw.compactMap { entry in
             guard
-                let name = entry["name"] as? String,
-                let sets = entry["sets"] as? Int,
-                let reps = entry["reps"] as? String,
-                let rest = entry["restSeconds"] as? Int,
-                let muscleGroup = entry["muscleGroup"] as? String,
-                let difficulty = entry["difficulty"] as? String
+                let name = entry[WatchSyncPayloadKey.name] as? String,
+                let sets = intValue(entry[WatchSyncPayloadKey.sets]),
+                let reps = entry[WatchSyncPayloadKey.reps] as? String,
+                let rest = intValue(entry[WatchSyncPayloadKey.restSeconds]),
+                let muscleGroup = entry[WatchSyncPayloadKey.muscleGroup] as? String,
+                let difficulty = entry[WatchSyncPayloadKey.difficulty] as? String
             else {
                 return nil
             }
@@ -88,7 +101,7 @@ final class WatchSyncService: NSObject, ObservableObject {
                 name: name,
                 sets: sets,
                 reps: reps,
-                duration: entry["duration"] as? Int,
+                duration: intValue(entry[WatchSyncPayloadKey.duration]),
                 restSeconds: rest,
                 muscleGroup: muscleGroup,
                 difficulty: difficulty
@@ -96,6 +109,32 @@ final class WatchSyncService: NSObject, ObservableObject {
         }
 
         return WatchWorkoutDay(dayOfWeek: day, focus: focus, exercises: exercises)
+    }
+
+    private func intValue(_ value: Any?) -> Int? {
+        if let intValue = value as? Int {
+            return intValue
+        }
+        if let number = value as? NSNumber {
+            return number.intValue
+        }
+        if let doubleValue = value as? Double {
+            return Int(doubleValue)
+        }
+        return nil
+    }
+
+    private func doubleValue(_ value: Any?) -> Double? {
+        if let doubleValue = value as? Double {
+            return doubleValue
+        }
+        if let number = value as? NSNumber {
+            return number.doubleValue
+        }
+        if let intValue = value as? Int {
+            return Double(intValue)
+        }
+        return nil
     }
 }
 

@@ -7,18 +7,26 @@ final class AppState: ObservableObject {
     @Published var latestTrendInsights: AnalyzeTrendsResponse?
     @Published var hasStoredAPIKey: Bool
 
-    private let defaults = UserDefaults.standard
-    private let keychain = KeychainService()
+    private let defaults: UserDefaults
+    private let keychain: KeychainService
 
-    private let mcpServerURLKey = "fitmind.settings.mcpServerURL"
-    private let themeModeKey = "fitmind.settings.themeMode"
+    static let mcpServerURLKey = "fitmind.settings.mcpServerURL"
+    static let themeModeKey = "fitmind.settings.themeMode"
+    static let defaultMCPServerURL = "http://127.0.0.1:8787"
 
     static let keychainService = "fitmind-ai-keys"
     static let openAIAccount = "openai-api-key"
 
-    init() {
-        mcpServerURLString = defaults.string(forKey: mcpServerURLKey) ?? "http://127.0.0.1:8787"
-        if let rawTheme = defaults.string(forKey: themeModeKey),
+    init(
+        defaults: UserDefaults = .standard,
+        keychain: KeychainService = KeychainService()
+    ) {
+        self.defaults = defaults
+        self.keychain = keychain
+
+        mcpServerURLString = defaults.string(forKey: Self.mcpServerURLKey) ?? Self.defaultMCPServerURL
+
+        if let rawTheme = defaults.string(forKey: Self.themeModeKey),
            let theme = ThemeMode(rawValue: rawTheme) {
             selectedTheme = theme
         } else {
@@ -34,12 +42,12 @@ final class AppState: ObservableObject {
     }
 
     var mcpServerURL: URL {
-        URL(string: mcpServerURLString) ?? URL(string: "http://127.0.0.1:8787")!
+        URL(string: mcpServerURLString) ?? URL(string: Self.defaultMCPServerURL)!
     }
 
     func saveSettings() {
-        defaults.set(mcpServerURLString, forKey: mcpServerURLKey)
-        defaults.set(selectedTheme.rawValue, forKey: themeModeKey)
+        defaults.set(mcpServerURLString, forKey: Self.mcpServerURLKey)
+        defaults.set(selectedTheme.rawValue, forKey: Self.themeModeKey)
     }
 
     func loadOpenAIKey() -> String {

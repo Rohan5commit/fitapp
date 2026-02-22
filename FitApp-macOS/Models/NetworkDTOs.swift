@@ -53,7 +53,7 @@ struct GeneratePlanRequest: Codable {
 
 struct GeneratePlanResponse: Codable {
     struct PlanExercise: Codable, Identifiable {
-        let id = UUID()
+        var id = UUID()
         let name: String
         let sets: Int
         let reps: String
@@ -62,13 +62,30 @@ struct GeneratePlanResponse: Codable {
         let muscleGroup: String
         let difficulty: String
         let notes: String?
+
+        private enum CodingKeys: String, CodingKey {
+            case name
+            case sets
+            case reps
+            case duration
+            case restSeconds
+            case muscleGroup
+            case difficulty
+            case notes
+        }
     }
 
     struct PlanDay: Codable, Identifiable {
-        let id = UUID()
+        var id = UUID()
         let dayOfWeek: String
         let focus: String
         let exercises: [PlanExercise]
+
+        private enum CodingKeys: String, CodingKey {
+            case dayOfWeek
+            case focus
+            case exercises
+        }
     }
 
     let weekStartDate: String
@@ -92,10 +109,16 @@ struct RecommendAdjustmentsRequest: Codable {
 
 struct RecommendAdjustmentsResponse: Codable {
     struct Adjustment: Codable, Identifiable {
-        let id = UUID()
+        var id = UUID()
         let dayOfWeek: String
         let action: String
         let reason: String
+
+        private enum CodingKeys: String, CodingKey {
+            case dayOfWeek
+            case action
+            case reason
+        }
     }
 
     let adjustments: [Adjustment]

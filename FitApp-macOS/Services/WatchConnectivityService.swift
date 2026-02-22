@@ -25,25 +25,33 @@ final class WatchConnectivityService: NSObject, ObservableObject {
 
     func sendTodayPlan(_ plan: GeneratePlanResponse.PlanDay) {
         guard let session else { return }
-        let payload: [String: Any] = [
-            "type": "todayPlan",
-            "dayOfWeek": plan.dayOfWeek,
-            "focus": plan.focus,
-            "exercises": plan.exercises.map {
-                [
-                    "name": $0.name,
-                    "sets": $0.sets,
-                    "reps": $0.reps,
-                    "duration": $0.duration as Any,
-                    "restSeconds": $0.restSeconds,
-                    "muscleGroup": $0.muscleGroup,
-                    "difficulty": $0.difficulty
-                ]
+
+        let exercisePayloads: [[String: Any]] = plan.exercises.map { exercise in
+            var payload: [String: Any] = [
+                WatchSyncPayloadKey.name: exercise.name,
+                WatchSyncPayloadKey.sets: exercise.sets,
+                WatchSyncPayloadKey.reps: exercise.reps,
+                WatchSyncPayloadKey.restSeconds: exercise.restSeconds,
+                WatchSyncPayloadKey.muscleGroup: exercise.muscleGroup,
+                WatchSyncPayloadKey.difficulty: exercise.difficulty
+            ]
+
+            if let duration = exercise.duration {
+                payload[WatchSyncPayloadKey.duration] = duration
             }
+
+            return payload
+        }
+
+        let payload: [String: Any] = [
+            WatchSyncPayloadKey.type: WatchSyncMessageType.todayPlan,
+            WatchSyncPayloadKey.dayOfWeek: plan.dayOfWeek,
+            WatchSyncPayloadKey.focus: plan.focus,
+            WatchSyncPayloadKey.exercises: exercisePayloads
         ]
 
         if session.isReachable {
-            session.sendMessage(payload, replyHandler: nil, errorHandler: nil)
+            session.sendMessage(payload, replyHandler: nil) { _ in }
         } else {
             try? session.updateApplicationContext(payload)
         }
@@ -62,12 +70,17 @@ extension WatchConnectivityService: WCSessionDelegate {
         }
     }
 
-    nonisolated func sessionDidBecomeInactive(_ session: WCSession) {}
-    nonisolated func sessionDidDeactivate(_ session: WCSession) {}
-
     nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
         Task { @MainActor in
             self.lastReceivedPayload = message
+            self.lastSyncDate = Date()
+            self.isReachable = session.isReachable
+        }
+    }
+
+    nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
+        Task { @MainActor in
+            self.lastReceivedPayload = applicationContext
             self.lastSyncDate = Date()
             self.isReachable = session.isReachable
         }
