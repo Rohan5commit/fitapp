@@ -29,6 +29,8 @@ struct SettingsView: View {
                     }
                 }
 
+                Toggle("Sync New Logs To HealthKit", isOn: $appState.syncLogsToHealthKit)
+
                 SecureField("OpenAI API Key (stored in Keychain)", text: $openAIKey)
                 Button("Save OpenAI Key") {
                     appState.saveKey(openAIKey, for: .openai)
@@ -47,6 +49,11 @@ struct SettingsView: View {
                         appState.saveSettings()
                         statusMessage = "Settings updated."
                     }
+                }
+
+                Button("Sign Out (Apple)") {
+                    appState.signOutLocalUser()
+                    statusMessage = "Signed out locally."
                 }
 
                 Button("Request HealthKit Permission") {
@@ -69,6 +76,8 @@ struct SettingsView: View {
                     .foregroundStyle(appState.hasStoredKey(for: .openai) ? .green : .orange)
                 Text(appState.hasStoredKey(for: .claude) ? "Claude key stored" : "Claude key not stored")
                     .foregroundStyle(appState.hasStoredKey(for: .claude) ? .green : .orange)
+                Text(appState.appleUserIdentifier == nil ? "Apple sign-in not active" : "Apple sign-in active")
+                    .foregroundStyle(appState.appleUserIdentifier == nil ? .orange : .green)
             }
             .font(.caption)
         }

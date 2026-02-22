@@ -82,7 +82,7 @@ struct ActiveWorkoutView: View {
                 WKInterfaceDevice.current().play(.notification)
             }
         }
-        .onChange(of: syncService.todayWorkout?.dayOfWeek ?? "") { _ in
+        .onChange(of: syncService.todayWorkout?.dayOfWeek ?? "") { _, _ in
             exerciseIndex = 0
             completedSets = 0
             restRemaining = 0

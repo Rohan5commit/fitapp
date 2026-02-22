@@ -5,7 +5,7 @@ AI-powered fitness coaching app for macOS 14+ and watchOS 10+, backed by a local
 ## Project Status
 
 - `mcp-server`: Implemented with all required endpoints, schema validation, provider switching, tests, and CI.
-- `FitApp-macOS`: SwiftUI + SwiftData scaffold implemented for onboarding, dashboard, generator, insights, history, settings, offline fallback, and service layer.
+- `FitApp-macOS`: SwiftUI + SwiftData app with local Sign in with Apple gate, onboarding, dashboard, generator, insights, history analytics, settings, offline fallback, and service layer.
 - `FitApp-watchOS`: SwiftUI companion scaffold implemented for active workout flow, quick stats, local cache, and WatchConnectivity sync.
 - `Xcode project`: wired targets are committed with watchOS HealthKit entitlements and HealthKit privacy usage strings; set signing team if needed.
 
@@ -91,7 +91,8 @@ Optional request headers (`x-fitmind-provider`, `x-fitmind-openai-key`, `x-fitmi
 1. Open `FitApp-macOS/FitApp_macOS.xcodeproj` in Xcode.
 2. Confirm bundle identifiers, signing team, and deployment settings for both app targets.
 3. Run macOS app target first, then watchOS target.
-4. In app Settings, set MCP URL, choose provider (`OpenAI`/`Claude`/`Mock`), and save API keys in Keychain.
+4. Sign in locally with Apple when prompted.
+5. In app Settings, set MCP URL, choose provider (`OpenAI`/`Claude`/`Mock`), save API keys in Keychain, and optionally enable HealthKit sync for manual logs.
 
 ## CI
 

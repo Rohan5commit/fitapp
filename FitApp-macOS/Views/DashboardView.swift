@@ -46,6 +46,49 @@ struct DashboardView: View {
         nextSession(from: currentPlan)
     }
 
+    private var volumeTrendPoints: [TrendPoint] {
+        logs
+            .prefix(14)
+            .enumerated()
+            .map { index, log in
+                let volume = log.completedExercises.reduce(0.0) { partial, exercise in
+                    partial + Double(exercise.setsCompleted * exercise.repsCompleted) * exercise.weightUsed
+                }
+                return TrendPoint(id: index, date: log.date, value: volume)
+            }
+            .sorted { $0.date < $1.date }
+    }
+
+    private var cardioTrendPoints: [TrendPoint] {
+        logs
+            .compactMap { log -> TrendPoint? in
+                guard let minutes = importedCardioMinutes(from: log.notes) else {
+                    return nil
+                }
+                return TrendPoint(id: log.id.hashValue, date: log.date, value: minutes)
+            }
+            .sorted { $0.date < $1.date }
+    }
+
+    private var restDayTrendPoints: [TrendPoint] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        let logDays = Set(logs.map { calendar.startOfDay(for: $0.date) })
+
+        return (0 ..< 14).compactMap { offset -> TrendPoint? in
+            guard let date = calendar.date(byAdding: .day, value: -offset, to: today) else {
+                return nil
+            }
+            let isRestDay = !logDays.contains(date)
+            return TrendPoint(
+                id: offset,
+                date: date,
+                value: isRestDay ? 1 : 0
+            )
+        }
+        .sorted { $0.date < $1.date }
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -95,10 +138,18 @@ struct DashboardView: View {
                 }
 
                 TrendChartView(
-                    title: "Training Volume (Last 14 sessions)",
-                    points: logs.prefix(14).enumerated().map { index, log in
-                        TrendPoint(id: index, date: log.date, value: Double(log.completedExercises.count) * 10.0)
-                    }
+                    title: "Weight Lifted Over Time",
+                    points: volumeTrendPoints
+                )
+
+                TrendChartView(
+                    title: "Cardio Performance (Imported Minutes)",
+                    points: cardioTrendPoints
+                )
+
+                TrendChartView(
+                    title: "Rest Days (1 = Rest, Last 14 Days)",
+                    points: restDayTrendPoints
                 )
             }
             .padding(20)
@@ -110,25 +161,30 @@ struct DashboardView: View {
             } catch {
                 caloriesToday = 0
             }
-            syncQuickStats()
+            syncWatch()
         }
-        .onChange(of: caloriesToday) { _ in
-            syncQuickStats()
+        .onChange(of: caloriesToday) { _, _ in
+            syncWatch()
         }
-        .onChange(of: logs.count) { _ in
-            syncQuickStats()
+        .onChange(of: logs.count) { _, _ in
+            syncWatch()
         }
-        .onChange(of: plans.count) { _ in
-            syncQuickStats()
+        .onChange(of: plans.count) { _, _ in
+            syncWatch()
         }
     }
 
-    private func syncQuickStats() {
+    private func syncWatch() {
         WatchConnectivityService.shared.sendQuickStats(
             caloriesToday: caloriesToday,
             streak: streakDays,
             nextSession: nextSessionLabel
         )
+
+        guard let todayPlan = currentOrNextPlanDay(from: currentPlan) else {
+            return
+        }
+        WatchConnectivityService.shared.sendTodayPlan(todayPlan)
     }
 
     private func nextSession(from plan: WorkoutPlan?) -> String {
@@ -162,5 +218,64 @@ struct DashboardView: View {
 
     private func weekdayIndex(for dayName: String) -> Int? {
         weekdayOrder.firstIndex { $0.caseInsensitiveCompare(dayName) == .orderedSame }
+    }
+
+    private func importedCardioMinutes(from notes: String) -> Double? {
+        guard notes.hasPrefix("Imported from HealthKit") else {
+            return nil
+        }
+
+        let parts = notes.split(separator: "|").map { $0.trimmingCharacters(in: .whitespaces) }
+        guard parts.count >= 2 else { return nil }
+
+        let minuteToken = parts[1]
+            .split(separator: " ")
+            .first
+            .flatMap { Double($0) }
+
+        return minuteToken
+    }
+
+    private func currentOrNextPlanDay(from plan: WorkoutPlan?) -> GeneratePlanResponse.PlanDay? {
+        guard let plan, !plan.days.isEmpty else {
+            return nil
+        }
+
+        let orderedDays = plan.days
+            .compactMap { day -> (index: Int, WorkoutDay)? in
+                guard let index = weekdayIndex(for: day.dayOfWeek) else {
+                    return nil
+                }
+                return (index, day)
+            }
+            .sorted { $0.index < $1.index }
+
+        guard !orderedDays.isEmpty else { return nil }
+
+        let weekday = Calendar.current.component(.weekday, from: .now)
+        let todayIndex = (weekday + 5) % 7
+        let targetDay = (orderedDays.first { $0.index == todayIndex } ?? orderedDays.first { $0.index > todayIndex })?.1
+            ?? orderedDays.first?.1
+
+        guard let targetDay else { return nil }
+
+        let exercises = targetDay.exercises.map { exercise in
+            GeneratePlanResponse.PlanExercise(
+                name: exercise.name,
+                sets: exercise.sets,
+                reps: exercise.reps,
+                duration: exercise.duration,
+                restSeconds: exercise.restSeconds,
+                muscleGroup: exercise.muscleGroup,
+                difficulty: exercise.difficulty,
+                notes: nil
+            )
+        }
+
+        return GeneratePlanResponse.PlanDay(
+            dayOfWeek: targetDay.dayOfWeek,
+            focus: targetDay.focus,
+            exercises: exercises
+        )
     }
 }
