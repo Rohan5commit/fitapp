@@ -1,6 +1,13 @@
 # FitMind
 
-AI-powered fitness coaching app for macOS 14+ and watchOS 10+, backed by a local MCP server that can call OpenAI or Anthropic.
+AI-powered fitness coaching app for macOS 14+ and watchOS 10+, backed by a local MCP server that can call OpenAI, Anthropic Claude, or a deterministic mock provider.
+
+## Project Status
+
+- `mcp-server`: Implemented with all required endpoints, schema validation, provider switching, tests, and CI.
+- `FitApp-macOS`: SwiftUI + SwiftData scaffold implemented for onboarding, dashboard, generator, insights, history, settings, and service layer.
+- `FitApp-watchOS`: SwiftUI companion scaffold implemented for active workout flow, quick stats, local cache, and WatchConnectivity sync.
+- `Xcode project`: source tree is ready; final target wiring/signing is done in Xcode on macOS.
 
 ## Screenshots
 
@@ -11,7 +18,8 @@ Screenshot placeholders are included; add real captures under `docs/screenshots/
 
 ## Architecture
 
-High-level architecture and data flow are in `docs/architecture.md`.
+- High-level architecture: `docs/architecture.md`
+- API payload examples: `docs/api.md`
 
 ## Repo Layout
 
@@ -28,12 +36,11 @@ fitapp/
 │   └── Models/
 ├── mcp-server/
 │   ├── src/
-│   │   ├── index.ts
-│   │   ├── routes/
-│   │   └── ai/
 │   ├── .env.example
-│   └── package.json
+│   ├── package.json
+│   └── README.md
 ├── docs/
+├── .github/workflows/
 ├── LICENSE
 ├── README.md
 └── .gitignore
@@ -50,17 +57,25 @@ fitapp/
    ```
 
 3. Configure provider + API key in `.env`.
-4. Install dependencies and run in dev mode.
+4. Install dependencies and run:
 
    ```bash
    npm install
    npm run dev
    ```
 
+Optional deterministic mode for UI development:
+
+```
+AI_PROVIDER=mock
+MOCK_SCENARIO=balanced
+```
+
 The server exposes:
 - `POST /analyze-trends`
 - `POST /generate-plan`
 - `POST /recommend-adjustments`
+- `GET /health`
 
 ## App Setup (Xcode)
 
@@ -69,29 +84,16 @@ The server exposes:
 3. Enable capabilities:
    - HealthKit (macOS + watchOS)
    - Watch Connectivity
-   - Sign in with Apple (if enabled in target)
+   - Sign in with Apple (optional, depending on your target config)
 4. Run macOS app target first, then watchOS target.
 
-## Key App Features
+## CI
 
-- Onboarding with profile + goals + preferences.
-- AI weekly plan generation via MCP server.
-- Trend analysis and adjustment recommendations.
-- HealthKit + WatchConnectivity service scaffolding.
-- SwiftData model graph for profile, plans, and logs.
+GitHub Actions workflow:
 
-## Environment Variables (`mcp-server/.env`)
+- `.github/workflows/mcp-server-ci.yml`
 
-```
-PORT=8787
-AI_PROVIDER=openai
-
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4o
-
-ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
-```
+It runs install, typecheck, tests, and build for `mcp-server` on push/PR.
 
 ## License
 
