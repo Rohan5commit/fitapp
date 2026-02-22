@@ -1,14 +1,14 @@
 import { Router } from "express";
 import { ZodError } from "zod";
-import { AIProvider } from "../ai/provider.js";
 import { buildAnalyzeTrendsPrompt } from "../ai/prompts.js";
+import { ProviderResolver } from "../providerResolver.js";
 import { AnalyzeTrendsResponse } from "../types.js";
 import { analyzeTrendsRequestSchema, analyzeTrendsResponseSchema } from "../validation.js";
 
-export function buildAnalyzeTrendsRouter(provider: AIProvider): Router {
+export function buildAnalyzeTrendsRouter(providerResolver: ProviderResolver): Router {
   const router = Router();
 
-  router.post("/analyze-trends", async (req, res) => {
+  router.post("/analyze-trends", async (req, res): Promise<void> => {
     let payload;
     try {
       payload = analyzeTrendsRequestSchema.parse(req.body);
@@ -24,6 +24,7 @@ export function buildAnalyzeTrendsRouter(provider: AIProvider): Router {
     }
 
     try {
+      const provider = providerResolver.resolve(req);
       const prompt = buildAnalyzeTrendsPrompt(payload);
       const aiResponse = await provider.completeJSON<AnalyzeTrendsResponse>(prompt);
       const response = analyzeTrendsResponseSchema.parse(aiResponse);

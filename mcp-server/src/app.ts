@@ -1,11 +1,12 @@
 import cors from "cors";
 import express from "express";
 import { AIProvider } from "./ai/provider.js";
+import { ProviderResolver } from "./providerResolver.js";
 import { buildAnalyzeTrendsRouter } from "./routes/analyzeTrends.js";
 import { buildGeneratePlanRouter } from "./routes/generatePlan.js";
 import { buildRecommendAdjustmentsRouter } from "./routes/recommendAdjustments.js";
 
-export function createApp(provider: AIProvider): express.Express {
+export function createApp(providerResolver: ProviderResolver): express.Express {
   const app = express();
 
   app.use(cors());
@@ -19,14 +20,14 @@ export function createApp(provider: AIProvider): express.Express {
   app.get("/health", (_req, res) => {
     res.json({
       ok: true,
-      provider: provider.name,
+      provider: providerResolver.defaultProvider.name,
       timestamp: new Date().toISOString()
     });
   });
 
-  app.use(buildAnalyzeTrendsRouter(provider));
-  app.use(buildGeneratePlanRouter(provider));
-  app.use(buildRecommendAdjustmentsRouter(provider));
+  app.use(buildAnalyzeTrendsRouter(providerResolver));
+  app.use(buildGeneratePlanRouter(providerResolver));
+  app.use(buildRecommendAdjustmentsRouter(providerResolver));
 
   app.use((_req, res) => {
     res.status(404).json({ error: "Not found" });

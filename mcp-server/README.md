@@ -23,6 +23,17 @@ Set `AI_PROVIDER` in `.env`:
 - `recovery`
 - `performance`
 
+### Optional per-request provider override headers
+
+The macOS app can override provider and API keys per request without changing `.env`.
+
+- `x-fitmind-provider`: `openai` | `claude` | `mock`
+- `x-fitmind-openai-key`: OpenAI API key for this request
+- `x-fitmind-anthropic-key`: Anthropic API key for this request
+- `x-fitmind-mock-scenario`: `balanced` | `recovery` | `performance`
+
+If no override headers are supplied, the server uses `.env` defaults.
+
 ## Commands
 
 Node version is pinned via `.nvmrc` (`20`).

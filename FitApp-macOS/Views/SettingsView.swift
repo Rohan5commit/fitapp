@@ -5,7 +5,8 @@ struct SettingsView: View {
     @StateObject private var healthKitService = HealthKitService()
 
     @State private var mcpURL = ""
-    @State private var apiKey = ""
+    @State private var openAIKey = ""
+    @State private var claudeKey = ""
     @State private var statusMessage = ""
 
     var body: some View {
@@ -16,24 +17,35 @@ struct SettingsView: View {
             Form {
                 TextField("MCP Server URL", text: $mcpURL)
 
+                Picker("AI Provider", selection: $appState.selectedAIProvider) {
+                    ForEach(AIProviderChoice.allCases) { provider in
+                        Text(provider.displayName).tag(provider)
+                    }
+                }
+
                 Picker("Theme", selection: $appState.selectedTheme) {
                     ForEach(ThemeMode.allCases) { mode in
                         Text(mode.rawValue).tag(mode)
                     }
                 }
 
-                SecureField("OpenAI API Key (stored in Keychain)", text: $apiKey)
+                SecureField("OpenAI API Key (stored in Keychain)", text: $openAIKey)
+                Button("Save OpenAI Key") {
+                    appState.saveKey(openAIKey, for: .openai)
+                    statusMessage = "OpenAI key saved."
+                }
+
+                SecureField("Claude API Key (stored in Keychain)", text: $claudeKey)
+                Button("Save Claude Key") {
+                    appState.saveKey(claudeKey, for: .claude)
+                    statusMessage = "Claude key saved."
+                }
 
                 HStack {
                     Button("Save Settings") {
                         appState.mcpServerURLString = mcpURL
                         appState.saveSettings()
                         statusMessage = "Settings updated."
-                    }
-
-                    Button("Save API Key") {
-                        appState.saveOpenAIKey(apiKey)
-                        statusMessage = appState.hasStoredAPIKey ? "API key saved to Keychain." : "Failed to store API key."
                     }
                 }
 
@@ -52,14 +64,19 @@ struct SettingsView: View {
             Text(statusMessage)
                 .foregroundStyle(.secondary)
 
-            Text(appState.hasStoredAPIKey ? "API key currently stored" : "No API key stored")
-                .font(.caption)
-                .foregroundStyle(appState.hasStoredAPIKey ? .green : .orange)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(appState.hasStoredKey(for: .openai) ? "OpenAI key stored" : "OpenAI key not stored")
+                    .foregroundStyle(appState.hasStoredKey(for: .openai) ? .green : .orange)
+                Text(appState.hasStoredKey(for: .claude) ? "Claude key stored" : "Claude key not stored")
+                    .foregroundStyle(appState.hasStoredKey(for: .claude) ? .green : .orange)
+            }
+            .font(.caption)
         }
         .padding(20)
         .onAppear {
             mcpURL = appState.mcpServerURLString
-            apiKey = appState.loadOpenAIKey()
+            openAIKey = appState.loadKey(for: .openai)
+            claudeKey = appState.loadKey(for: .claude)
         }
     }
 }

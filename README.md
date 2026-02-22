@@ -84,6 +84,8 @@ The server exposes:
 - `POST /recommend-adjustments`
 - `GET /health`
 
+Optional request headers (`x-fitmind-provider`, `x-fitmind-openai-key`, `x-fitmind-anthropic-key`) let the macOS app choose provider/keys per request without changing `.env`.
+
 ## App Setup (Xcode)
 
 1. Open `FitApp-macOS/FitApp_macOS.xcodeproj` in Xcode.
@@ -93,6 +95,7 @@ The server exposes:
    - Watch Connectivity
    - Sign in with Apple (optional, depending on your target config)
 4. Run macOS app target first, then watchOS target.
+5. In app Settings, set MCP URL, choose provider (`OpenAI`/`Claude`/`Mock`), and save API keys in Keychain.
 
 ## CI
 

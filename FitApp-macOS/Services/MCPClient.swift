@@ -33,8 +33,24 @@ final class MCPClient {
         try await post(baseURL: baseURL, path: "/analyze-trends", request: request)
     }
 
+    func analyzeTrends(
+        baseURL: URL,
+        request: AnalyzeTrendsRequest,
+        headers: [String: String]
+    ) async throws -> AnalyzeTrendsResponse {
+        try await post(baseURL: baseURL, path: "/analyze-trends", request: request, headers: headers)
+    }
+
     func generatePlan(baseURL: URL, request: GeneratePlanRequest) async throws -> GeneratePlanResponse {
         try await post(baseURL: baseURL, path: "/generate-plan", request: request)
+    }
+
+    func generatePlan(
+        baseURL: URL,
+        request: GeneratePlanRequest,
+        headers: [String: String]
+    ) async throws -> GeneratePlanResponse {
+        try await post(baseURL: baseURL, path: "/generate-plan", request: request, headers: headers)
     }
 
     func recommendAdjustments(
@@ -44,10 +60,19 @@ final class MCPClient {
         try await post(baseURL: baseURL, path: "/recommend-adjustments", request: request)
     }
 
+    func recommendAdjustments(
+        baseURL: URL,
+        request: RecommendAdjustmentsRequest,
+        headers: [String: String]
+    ) async throws -> RecommendAdjustmentsResponse {
+        try await post(baseURL: baseURL, path: "/recommend-adjustments", request: request, headers: headers)
+    }
+
     private func post<T: Encodable, U: Decodable>(
         baseURL: URL,
         path: String,
-        request: T
+        request: T,
+        headers: [String: String] = [:]
     ) async throws -> U {
         guard let url = URL(string: path, relativeTo: baseURL) else {
             throw MCPClientError.invalidURL
@@ -57,6 +82,9 @@ final class MCPClient {
         urlRequest.httpMethod = "POST"
         urlRequest.timeoutInterval = 30
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        for (name, value) in headers {
+            urlRequest.setValue(value, forHTTPHeaderField: name)
+        }
         urlRequest.httpBody = try encoder.encode(request)
 
         do {

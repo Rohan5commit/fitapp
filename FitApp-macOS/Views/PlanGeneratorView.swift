@@ -125,7 +125,11 @@ struct PlanGeneratorView: View {
         )
 
         do {
-            let response = try await client.generatePlan(baseURL: appState.mcpServerURL, request: request)
+            let response = try await client.generatePlan(
+                baseURL: appState.mcpServerURL,
+                request: request,
+                headers: appState.mcpRequestHeaders()
+            )
             generatedPlan = response
             usingFallbackPlan = false
             savePlanToStore(response, source: "ai")

@@ -117,7 +117,11 @@ struct InsightsView: View {
         )
 
         do {
-            let response = try await client.analyzeTrends(baseURL: appState.mcpServerURL, request: request)
+            let response = try await client.analyzeTrends(
+                baseURL: appState.mcpServerURL,
+                request: request,
+                headers: appState.mcpRequestHeaders()
+            )
             appState.latestTrendInsights = response
         } catch {
             errorMessage = error.localizedDescription
@@ -169,7 +173,11 @@ struct InsightsView: View {
         )
 
         do {
-            adjustments = try await client.recommendAdjustments(baseURL: appState.mcpServerURL, request: request)
+            adjustments = try await client.recommendAdjustments(
+                baseURL: appState.mcpServerURL,
+                request: request,
+                headers: appState.mcpRequestHeaders()
+            )
         } catch {
             errorMessage = error.localizedDescription
         }

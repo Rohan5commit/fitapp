@@ -29,6 +29,11 @@ paths:
   /analyze-trends:
     post:
       summary: Analyze workout trends
+      parameters:
+        - $ref: '#/components/parameters/FitmindProviderHeader'
+        - $ref: '#/components/parameters/FitmindOpenAIKeyHeader'
+        - $ref: '#/components/parameters/FitmindAnthropicKeyHeader'
+        - $ref: '#/components/parameters/FitmindMockScenarioHeader'
       requestBody:
         required: true
         content:
@@ -49,6 +54,11 @@ paths:
   /generate-plan:
     post:
       summary: Generate weekly workout plan
+      parameters:
+        - $ref: '#/components/parameters/FitmindProviderHeader'
+        - $ref: '#/components/parameters/FitmindOpenAIKeyHeader'
+        - $ref: '#/components/parameters/FitmindAnthropicKeyHeader'
+        - $ref: '#/components/parameters/FitmindMockScenarioHeader'
       requestBody:
         required: true
         content:
@@ -69,6 +79,11 @@ paths:
   /recommend-adjustments:
     post:
       summary: Recommend plan adjustments based on recent performance
+      parameters:
+        - $ref: '#/components/parameters/FitmindProviderHeader'
+        - $ref: '#/components/parameters/FitmindOpenAIKeyHeader'
+        - $ref: '#/components/parameters/FitmindAnthropicKeyHeader'
+        - $ref: '#/components/parameters/FitmindMockScenarioHeader'
       requestBody:
         required: true
         content:
@@ -87,6 +102,37 @@ paths:
         '500':
           description: Provider or processing error
 components:
+  parameters:
+    FitmindProviderHeader:
+      name: x-fitmind-provider
+      in: header
+      required: false
+      description: Optional provider override for this request.
+      schema:
+        type: string
+        enum: [openai, claude, mock]
+    FitmindOpenAIKeyHeader:
+      name: x-fitmind-openai-key
+      in: header
+      required: false
+      description: Optional OpenAI API key for this request.
+      schema:
+        type: string
+    FitmindAnthropicKeyHeader:
+      name: x-fitmind-anthropic-key
+      in: header
+      required: false
+      description: Optional Anthropic API key for this request.
+      schema:
+        type: string
+    FitmindMockScenarioHeader:
+      name: x-fitmind-mock-scenario
+      in: header
+      required: false
+      description: Optional mock scenario override when provider is `mock`.
+      schema:
+        type: string
+        enum: [balanced, recovery, performance]
   schemas:
     AnalyzeTrendsRequest:
       type: object

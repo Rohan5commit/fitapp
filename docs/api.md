@@ -18,6 +18,15 @@ Example response:
 
 ## `POST /analyze-trends`
 
+Optional headers for provider override:
+
+```http
+x-fitmind-provider: openai|claude|mock
+x-fitmind-openai-key: sk-...
+x-fitmind-anthropic-key: ...
+x-fitmind-mock-scenario: balanced|recovery|performance
+```
+
 Request:
 
 ```json
@@ -44,6 +53,8 @@ Request:
 
 ## `POST /generate-plan`
 
+Optional headers are the same as `/analyze-trends`.
+
 Request:
 
 ```json
@@ -65,6 +76,8 @@ Request:
 ```
 
 ## `POST /recommend-adjustments`
+
+Optional headers are the same as `/analyze-trends`.
 
 Request:
 
