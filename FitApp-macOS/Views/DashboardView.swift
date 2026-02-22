@@ -4,12 +4,15 @@ import SwiftUI
 struct DashboardView: View {
     let profile: UserProfile
 
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var appState: AppState
     @Query(sort: \WorkoutPlan.weekStartDate, order: .reverse) private var plans: [WorkoutPlan]
     @Query(sort: \WorkoutLog.date, order: .reverse) private var logs: [WorkoutLog]
 
+    @ObservedObject private var watchConnectivity = WatchConnectivityService.shared
     @StateObject private var healthKitService = HealthKitService()
     @State private var caloriesToday: Double = 0
+    @State private var lastProcessedSetEventTimestamp: TimeInterval = 0
 
     private let weekdayOrder = [
         "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
@@ -117,6 +120,21 @@ struct DashboardView: View {
                     )
                 }
 
+                if let setEvent = watchConnectivity.latestSetCompletion {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Live Watch Sync")
+                            .font(.headline)
+                        Text("\(setEvent.exerciseName) · Set \(setEvent.setNumber) · \(setEvent.reps) reps")
+                            .font(.subheadline)
+                        Text(setEvent.timestamp.formatted(date: .omitted, time: .shortened))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(12)
+                    .background(Color.gray.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+
                 if let currentPlan {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Current Week Plan")
@@ -171,6 +189,10 @@ struct DashboardView: View {
         }
         .onChange(of: plans.count) { _, _ in
             syncWatch()
+        }
+        .onChange(of: watchConnectivity.latestSetCompletion?.timestamp.timeIntervalSince1970 ?? 0) { _, newValue in
+            guard newValue > 0 else { return }
+            persistLatestSetCompletionIfNeeded()
         }
     }
 
@@ -277,5 +299,56 @@ struct DashboardView: View {
             focus: targetDay.focus,
             exercises: exercises
         )
+    }
+
+    private func persistLatestSetCompletionIfNeeded() {
+        guard let event = watchConnectivity.latestSetCompletion else {
+            return
+        }
+
+        let eventTimestamp = event.timestamp.timeIntervalSince1970
+        guard eventTimestamp > lastProcessedSetEventTimestamp else {
+            return
+        }
+        lastProcessedSetEventTimestamp = eventTimestamp
+
+        let exerciseID = resolveExerciseID(forExerciseName: event.exerciseName) ?? UUID()
+        let loggedExercise = LoggedExercise(
+            exerciseId: exerciseID,
+            setsCompleted: 1,
+            repsCompleted: max(event.reps, 1),
+            weightUsed: 0
+        )
+
+        let today = Calendar.current.startOfDay(for: event.timestamp)
+        let existingLog = logs.first { log in
+            Calendar.current.isDate(log.date, inSameDayAs: today) && log.notes.hasPrefix("Watch Auto Log")
+        }
+
+        if let existingLog {
+            existingLog.completedExercises.append(loggedExercise)
+            existingLog.notes = "Watch Auto Log · Last update \(event.timestamp.formatted(date: .omitted, time: .shortened))"
+        } else {
+            let log = WorkoutLog(
+                date: event.timestamp,
+                completedExercises: [loggedExercise],
+                notes: "Watch Auto Log · Started \(event.timestamp.formatted(date: .omitted, time: .shortened))"
+            )
+            modelContext.insert(log)
+        }
+
+        try? modelContext.save()
+    }
+
+    private func resolveExerciseID(forExerciseName exerciseName: String) -> UUID? {
+        guard let plan = currentPlan else {
+            return nil
+        }
+
+        let normalized = exerciseName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return plan.days
+            .flatMap(\.exercises)
+            .first { $0.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == normalized }?
+            .id
     }
 }
