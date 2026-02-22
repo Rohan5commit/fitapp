@@ -392,6 +392,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = FitMind;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "FitMind reads heart rate, calorie, and workout data to personalize your plans.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "FitMind writes completed workouts to Health for accurate trend tracking.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright (c) 2026 Rohan5commit";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
@@ -412,6 +414,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = FitMind;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "FitMind reads heart rate, calorie, and workout data to personalize your plans.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "FitMind writes completed workouts to Health for accurate trend tracking.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright (c) 2026 Rohan5commit";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
@@ -424,10 +428,13 @@
 		6108032C94AF0A887AD36527 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "../FitApp-watchOS/FitApp-watchOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "FitMind Watch";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "FitMind Watch reads your heart rate to guide active workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "FitMind Watch writes workouts and calorie burn to Health.";
 				PRODUCT_BUNDLE_IDENTIFIER = com.rohan5commit.fitmind.watchos;
 				SDKROOT = watchos;
 				SWIFT_VERSION = 5.9;
@@ -438,10 +445,13 @@
 		6ACBAAB4C2567E940A7BA3C3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "../FitApp-watchOS/FitApp-watchOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "FitMind Watch";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "FitMind Watch reads your heart rate to guide active workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "FitMind Watch writes workouts and calorie burn to Health.";
 				PRODUCT_BUNDLE_IDENTIFIER = com.rohan5commit.fitmind.watchos;
 				SDKROOT = watchos;
 				SWIFT_VERSION = 5.9;
