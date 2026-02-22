@@ -25,12 +25,20 @@ Set `AI_PROVIDER` in `.env`:
 
 ## Commands
 
+Node version is pinned via `.nvmrc` (`20`).
+
 ```bash
 npm install
 npm run dev
 npm run typecheck
 npm test
 npm run build
+```
+
+Smoke test while server is running:
+
+```bash
+./scripts/smoke_test.sh
 ```
 
 ## API Contract

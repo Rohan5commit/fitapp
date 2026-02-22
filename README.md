@@ -65,6 +65,12 @@ fitapp/
    npm run dev
    ```
 
+   Optional smoke test (in another terminal):
+
+   ```bash
+   ./mcp-server/scripts/smoke_test.sh
+   ```
+
 Optional deterministic mode for UI development:
 
 ```
