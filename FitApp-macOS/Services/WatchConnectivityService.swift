@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(WatchConnectivity)
 import WatchConnectivity
+#endif
 
 struct SetCompletionEvent {
     let exerciseName: String
@@ -18,7 +20,9 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     @Published private(set) var lastReceivedPayload: [String: Any] = [:]
     @Published private(set) var latestSetCompletion: SetCompletionEvent?
 
+#if canImport(WatchConnectivity)
     private let session: WCSession? = WCSession.isSupported() ? WCSession.default : nil
+#endif
 
     override private init() {
         super.init()
@@ -26,15 +30,17 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     }
 
     private func activateSession() {
+#if canImport(WatchConnectivity)
         guard let session else { return }
         session.delegate = self
         session.activate()
         isReachable = session.isReachable
+#else
+        isReachable = false
+#endif
     }
 
     func sendTodayPlan(_ plan: GeneratePlanResponse.PlanDay) {
-        guard let session else { return }
-
         let exercisePayloads: [[String: Any]] = plan.exercises.map { exercise in
             var payload: [String: Any] = [
                 WatchSyncPayloadKey.name: exercise.name,
@@ -74,6 +80,7 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     }
 
     private func send(_ payload: [String: Any]) {
+#if canImport(WatchConnectivity)
         guard let session else { return }
 
         if session.isReachable {
@@ -81,6 +88,9 @@ final class WatchConnectivityService: NSObject, ObservableObject {
         } else {
             try? session.updateApplicationContext(payload)
         }
+#else
+        _ = payload
+#endif
     }
 
     private func handleIncomingPayload(_ payload: [String: Any]) {
@@ -130,6 +140,7 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     }
 }
 
+#if canImport(WatchConnectivity)
 extension WatchConnectivityService: WCSessionDelegate {
     nonisolated func session(
         _ session: WCSession,
@@ -162,3 +173,4 @@ extension WatchConnectivityService: WCSessionDelegate {
         }
     }
 }
+#endif

@@ -16,7 +16,7 @@ final class HeartRateService: ObservableObject {
             return
         }
 
-        _ = try? await withCheckedThrowingContinuation { continuation in
+        _ = try? await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
             healthStore.requestAuthorization(toShare: nil, read: [heartRate]) { success, error in
                 if let error {
                     continuation.resume(throwing: error)
@@ -39,11 +39,15 @@ final class HeartRateService: ObservableObject {
             anchor: nil,
             limit: HKObjectQueryNoLimit
         ) { [weak self] _, samples, _, _, _ in
-            self?.handle(samples)
+            Task { @MainActor in
+                self?.handle(samples)
+            }
         }
 
         query.updateHandler = { [weak self] _, samples, _, _, _ in
-            self?.handle(samples)
+            Task { @MainActor in
+                self?.handle(samples)
+            }
         }
 
         self.query = query
@@ -64,9 +68,6 @@ final class HeartRateService: ObservableObject {
 
         let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
         let value = quantitySample.quantity.doubleValue(for: unit)
-
-        Task { @MainActor in
-            self.currentHeartRate = value
-        }
+        currentHeartRate = value
     }
 }

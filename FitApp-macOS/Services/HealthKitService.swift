@@ -13,12 +13,11 @@ final class HealthKitService: ObservableObject {
             return
         }
 
-        let readTypes: Set<HKObjectType> = [
+        let readTypes = Set([
             HKObjectType.quantityType(forIdentifier: .activeEnergyBurned),
             HKObjectType.quantityType(forIdentifier: .heartRate),
             HKObjectType.workoutType()
-        ]
-        .compactMap { $0 }
+        ].compactMap { $0 as HKObjectType? })
 
         let granted: Bool = try await withCheckedThrowingContinuation { continuation in
             healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
