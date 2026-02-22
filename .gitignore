@@ -1,0 +1,23 @@
+# macOS / Xcode
+.DS_Store
+DerivedData/
+build/
+*.xcworkspace
+xcuserdata/
+*.xcuserstate
+
+# Swift Package / tooling
+.build/
+Packages/
+
+# Node
+node_modules/
+mcp-server/dist/
+mcp-server/.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Logs
+*.log
